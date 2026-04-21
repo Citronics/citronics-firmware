@@ -32,7 +32,7 @@ FIRMWARE_DIR="${PKG_DIR}/lib/firmware"
 # Set up build directory with DEBIAN from phone template
 rm -rf "${PKG_DIR}"
 mkdir -p "${PKG_DIR}/DEBIAN"
-mkdir -p "${FIRMWARE_DIR}/wlan/prima"
+mkdir -p "${FIRMWARE_DIR}"
 cp "phones/${PHONE}/DEBIAN/control" "${PKG_DIR}/DEBIAN/control"
 
 # Source phone-specific firmware copy operations
