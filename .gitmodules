@@ -1,0 +1,6 @@
+[submodule "fp2-firmware"]
+	path = fp2-firmware
+	url = https://github.com/fairblobs/fp2-firmware
+[submodule "android_device_fairphone_FP2"]
+	path = android_device_fairphone_FP2
+	url = https://github.com/LineageOS/android_device_fairphone_FP2
