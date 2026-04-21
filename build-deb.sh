@@ -35,11 +35,10 @@ mkdir -p "${PKG_DIR}/DEBIAN"
 mkdir -p "${FIRMWARE_DIR}/wlan/prima"
 cp "phones/${PHONE}/DEBIAN/control" "${PKG_DIR}/DEBIAN/control"
 
-# Copy from submodule 1
-cp android_device_fairphone_FP2/wifi/WCNSS* "${FIRMWARE_DIR}/wlan/prima/"
-
-# Copy from submodule 2
-cp fp2-firmware/* "${FIRMWARE_DIR}/"
+# Source phone-specific firmware copy operations
+# shellcheck source=/dev/null
+source "phones/${PHONE}/sources.conf"
+copy_firmware "${FIRMWARE_DIR}"
 
 # Set correct permissions
 find "${FIRMWARE_DIR}" -type f -exec chmod 644 {} \;
