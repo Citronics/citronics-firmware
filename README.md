@@ -27,9 +27,9 @@ This produces a file named `linux-firmware-lime-fp3_<version>_all.deb`.
    ```bash
    git tag v1.1
    ```
-2. Create a GitHub release with the produced `.deb` asset:
+ 2. Run the release script — it builds all boards and creates one GitHub Release:
    ```bash
-   gh release create v1.1 linux-firmware-lime-fp3_1.1_all.deb --title "v1.1" --notes "Release notes"
+   ./release.sh
    ```
 3. Trigger the [deb-packages](https://github.com/Citronics/deb-packages) CI workflow to update the APT repository.
 
@@ -41,5 +41,5 @@ This produces a file named `linux-firmware-lime-fp3_<version>_all.deb`.
 
 ## Links
 
-- [deb-packages](https://github.com/Citronics/deb-packages): APT repository management.
+- [deb-packages](https://github.com/Citronics/deb-packages): APT repository management — live at `https://citronics.github.io/deb-packages/`.
 - [debos-citronics](https://github.com/Citronics/debos-citronics): OS image builder.
