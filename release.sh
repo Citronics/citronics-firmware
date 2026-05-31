@@ -1,34 +1,34 @@
 #!/bin/bash
 set -e
 
-# Phone is required first argument
-if [ -z "${1:-}" ]; then
-  echo "ERROR: Phone argument required" >&2
-  echo "Usage: $0 <phone>" >&2
-  echo "Example: $0 fp2" >&2
+TAG=$(git describe --tags --exact-match 2>/dev/null) || {
+  echo "ERROR: No git tag on current commit. Tag first: git tag v1.1" >&2
   exit 1
-fi
-PHONE="$1"
-
-TAG=$(git describe --tags --exact-match)
+}
 VERSION=${TAG#v}
 
-# Derive package name from phone's control file
-PKG_NAME=$(grep '^Package:' "phones/${PHONE}/DEBIAN/control" | awk '{print $2}')
+echo "Building citronics-firmware $VERSION for all boards..."
 
-echo "Building ${PKG_NAME} ${VERSION}..."
-./build-deb.sh "$PHONE"
+ASSETS=""
+for PHONE_DIR in phones/*/; do
+  PHONE=$(basename "$PHONE_DIR")
+  echo "Building $PHONE..."
+  ./build-deb.sh "$PHONE"
+  PKG_NAME=$(grep '^Package:' "phones/${PHONE}/DEBIAN/control" | awk '{print $2}')
+  DEB="${PKG_NAME}_${VERSION}_all.deb"
+  if [ ! -f "$DEB" ]; then
+    echo "ERROR: Expected $DEB not found after build" >&2
+    exit 1
+  fi
+  ASSETS="$ASSETS $DEB"
+done
 
-DEB="${PKG_NAME}_${VERSION}_all.deb"
-if [ ! -f "$DEB" ]; then
-  echo "ERROR: Expected $DEB not found"
-  exit 1
-fi
-
+echo "All boards built. Assets:$ASSETS"
 echo "Creating GitHub release $TAG..."
-gh release create "$TAG" "$DEB" \
+# shellcheck disable=SC2086
+gh release create "$TAG" $ASSETS \
   --repo Citronics/citronics-firmware \
-  --title "citronics-firmware ${VERSION} (${PHONE})" \
-  --notes "Release ${VERSION} for ${PHONE}"
+  --title "citronics-firmware $VERSION" \
+  --notes "Firmware packages for all boards — version $VERSION"
 
-echo "Done. Release $TAG published with $DEB"
+echo "Done. Release $TAG published."
