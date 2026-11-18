@@ -50,8 +50,15 @@ jobs:
           else
             BASE=$(echo "$LATEST" | sed -E 's/\.[0-9]+$//')
           fi
-          N=$(git tag | grep -cE "^${BASE//./\\.}\.[0-9]+$" || true)
-          NEXT="${BASE}.$((N + 1))"
+          # The highest existing suffix, not the count of them: deleted tags
+          # leave gaps, and counting then names a tag that already exists.
+          # Sorted numerically, or .9 would outrank .15.
+          MAX=$(git tag | grep -E "^${BASE//./\\.}\.[0-9]+$" \
+                        | sed -E 's/.*\.([0-9]+)$/\1/' | sort -n | tail -1)
+          NEXT="${BASE}.$(( ${MAX:-0} + 1 ))"
+          while git rev-parse -q --verify "refs/tags/$NEXT" >/dev/null; do
+            MAX=$((MAX + 1)); NEXT="${BASE}.$((MAX + 1))"
+          done
           git tag "$NEXT"
           git push origin "$NEXT"
           echo "Tagged $NEXT (base $BASE)"
@@ -65,9 +72,11 @@ jobs:
         env:
           APT_DISPATCH_TOKEN: ${{ secrets.APT_DISPATCH_TOKEN }}
         run: |
+          # The release is published, but without this hop apt never learns
+          # about it: a missing token must show as a failed run.
           if [ -z "$APT_DISPATCH_TOKEN" ]; then
-            echo "APT_DISPATCH_TOKEN not set — skipping APT update dispatch"
-            exit 0
+            echo "::error::APT_DISPATCH_TOKEN is not set: the release is published but the APT repository was not asked to update."
+            exit 1
           fi
           curl -sf -X POST \
             -H "Authorization: Bearer $APT_DISPATCH_TOKEN" \
